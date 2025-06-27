@@ -1,31 +1,7 @@
+ 
+
 import React, { useState, useEffect } from "react";
 import { FaStar, FaEye } from "react-icons/fa";
-
-// 📊 Data
-const tutorialData = [
-  {
-    title:
-      "Convert your web layout theming easily with sketch zeplin extension",
-    image: "https://images.unsplash.com/photo-1603791440384-56cd371ee9a7",
-    stars: 5.0,
-    reviewCount: 392,
-    studentsWatched: 1037,
-  },
-  {
-    title: "Create multiple figma prototypes easily",
-    image: "https://images.unsplash.com/photo-1603791440384-56cd371ee9a7",
-    stars: 4.8,
-    reviewCount: 210,
-    studentsWatched: 3000,
-  },
-  {
-    title: "Design tokens and variables in UI systems",
-    image: "https://images.unsplash.com/photo-1603791440384-56cd371ee9a7",
-    stars: 4.9,
-    reviewCount: 300,
-    studentsWatched: 2200,
-  },
-];
 
 const ReviewCard = ({ image, stars, reviewCount, title, studentsWatched }) => {
   const cardStyles = {
@@ -109,7 +85,7 @@ const ReviewCard = ({ image, stars, reviewCount, title, studentsWatched }) => {
       onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
     >
       <div style={cardStyles.imageWrapper}>
-        <img src={image} alt="tutorial" style={cardStyles.image} />
+        <img src={`${import.meta.env.VITE_API_BASE_URL}/${image}`} alt="tutorial" style={cardStyles.image} />
         <div style={cardStyles.playButtonWrapper}>
           <button style={cardStyles.playButton}>▶</button>
         </div>
@@ -137,8 +113,10 @@ const ReviewCard = ({ image, stars, reviewCount, title, studentsWatched }) => {
 };
 
 const MainTutorial = () => {
+  const [tutorialData, setTutorialData] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -146,13 +124,34 @@ const MainTutorial = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/auth/get`);
+
+        const data = await res.json();
+        setTutorialData(data);
+      } catch (error) {
+        console.error("Failed to fetch tutorial data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const nextSlide = () => {
-    setCurrentIndex((prev) => (prev + 1) % tutorialData.length);
+    setCurrentIndex((prev) =>
+      tutorialData.length > 0 ? (prev + 1) % tutorialData.length : 0
+    );
   };
 
   const prevSlide = () => {
-    setCurrentIndex(
-      (prev) => (prev - 1 + tutorialData.length) % tutorialData.length
+    setCurrentIndex((prev) =>
+      tutorialData.length > 0
+        ? (prev - 1 + tutorialData.length) % tutorialData.length
+        : 0
     );
   };
 
@@ -229,7 +228,13 @@ const MainTutorial = () => {
   return (
     <div style={styles.wrapper}>
       <div style={styles.sliderSection}>
-        <ReviewCard {...tutorialData[currentIndex]} />
+        {loading ? (
+          <p>Loading...</p>
+        ) : (
+          tutorialData.length > 0 && (
+            <ReviewCard {...tutorialData[currentIndex]} />
+          )
+        )}
         <div style={styles.arrowContainer}>
           <button style={styles.arrowBtn} onClick={prevSlide}>
             ⟵

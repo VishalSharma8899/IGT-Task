@@ -82,7 +82,7 @@ const ReviewCard = ({ image, stars, reviewCount, title, studentsWatched }) => {
       onMouseOut={(e) => (e.currentTarget.style.transform = "scale(1)")}
     >
       <div style={styles.imageWrapper}>
-        <img src={image} alt="tutorial" style={styles.image} />
+        <img  src={`${import.meta.env.VITE_API_BASE_URL}/${image}`}  alt="tutorial" style={styles.image} />
         <div style={styles.playButtonWrapper}>
           <button style={styles.playButton}>▶</button>
         </div>
